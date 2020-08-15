@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
-import ChatBot, { Loading } from 'react-simple-chatbot';
+import ChatBot from 'react-simple-chatbot';
 
 const Chatbot = () => {
 
   return (    
       <ChatBot
         headerTitle="煤氣虛擬助理 Tinny"
+        placeholder="請以關鍵詞輸入您的查詢(15字內)"
         recognitionEnable={true}
+        enableSmoothScroll={true}
         steps={[
           {
             id: 'initialMessage',
@@ -28,9 +30,9 @@ const Chatbot = () => {
           {
             id: 'initialOptions',
             options: [
-              { value: 1, label: '賬單及報錶', trigger: '賬單及報錶' },
-              { value: 2, label: '安裝工程', trigger: 'initialMessage2' },
-              { value: 3, label: '產品資料', trigger: 'initialMessage2' },
+              { value: 1, label: '賬單', trigger: '賬單' },
+              { value: 2, label: '安裝工程', trigger: '安裝工程' },
+              { value: 3, label: '產品保養', trigger: '產品保養' },
               { value: 4, label: '手動輸入關鍵詞查詢', trigger: 'input' },
             ],
           },
@@ -48,11 +50,10 @@ const Chatbot = () => {
             trigger: 'initialMessage2',
           },
           {
-            id: '賬單及報錶',
+            id: '賬單',
             options: [
               { value: 1, label: '賬單發單頻率', trigger: '賬單發單頻率' },
               { value: 2, label: '賬單計算方法', trigger: '賬單計算方法' },
-              { value: 3, label: '賬單繳費方法', trigger: '賬單繳費方法' },
             ]
           },
           {
@@ -70,24 +71,50 @@ const Chatbot = () => {
             1. 「煤氣費」是依照公司當時發表有效的收費表及燃料調整費而計算。
             2. 如「煤氣費」(未包「保養月費$9.5」前)少於每月基本收費$20,則該月須繳付基本收費$20。`,            
             end: true
+          },     
+          {
+            id: '安裝工程',
+            options: [
+              { value: 1, label: '估價服務', trigger: '估價服務' },
+              { value: 2, label: '安裝工程專業資格', trigger: '安裝工程專業資格' },
+            ]
           },
           {
-            id: '賬單繳費方法',
-            message: `客戶可以通過下列途徑繳交煤氣費：
-            1. 銀行自動轉賬
-            2. 信用卡自動轉賬
-            3. 網上繳費
-            4. 電話繳費 (繳費靈)
-            5. 銀行自動櫃員機
-            6. 銀行存支票機
-            7. 東亞銀行櫃位
-            8. 煤氣客戶中心
-            9. 郵政局
-            10. 郵寄支票
-            11. 便利店/超市
-            12. 電子支票
-            13. TNG 電子錢包
-            14. 轉數快`,            
+            id: '估價服務',
+            message: `煤氣公司可提供以下免費估價服務，以確保安裝工程的可行性。
+            1. 安裝於煤氣公司購買的爐具
+            2. 更改灶台或訂製不銹鋼框架
+            3. 更換煤氣喉管`,            
+            end: true
+          },
+          {
+            id: '安裝工程專業資格',
+            message: `所有氣體裝置工程包括建造、接駁、截離、試驗、投入運作、解除運作、維修、修理或更換氣體配件，只可由受僱於註冊氣體工程承辦商的註冊氣體裝置技工進行，從而保障氣體用戶和市民的安全。
+            註冊氣體裝置技工牌照須透過機電工程署申請。`,            
+            end: true
+          },       
+          {
+            id: '產品保養',
+            options: [
+              { value: 1, label: '煤氣爐具', trigger: '煤氣爐具' },
+              { value: 2, label: '石油氣爐具', trigger: '石油氣爐具' },
+            ]
+          },
+          {
+            id: '煤氣爐具',
+            message: `住宅用戶新購買煤氣爐具，在安裝後可享有三年的保養期
+            註：保養服務並不包括損耗配件 (如爐架、溢湯盤、爐蓋及爐環等)。`,            
+            end: true
+          },
+          {
+            id: '石油氣爐具',
+            message: `住宅用戶新購買石油氣爐具，在安裝後可享有三年的保養期
+            *如維修保養地區在馬灣、大嶼山(東涌除外)及離島需按次另加$800元的附加費。 所有行使禁區紙的地區則不獲提供維修保養服務 註：保養服務並不包括損耗配件 (如爐架、溢湯盤、爐蓋及爐環等)。`,            
+            end: true
+          }, 
+          {
+            id: 'sorry',
+            message: `抱歉，我不懂你的意思。請致電91234567聯絡客服。`,
             end: true
           }
         ]}
@@ -110,34 +137,39 @@ class InputParser extends Component {
     const { steps } = this.props
     const { input } = steps
     this.setState({ input })
-
-    if (input.value.includes('ff')) {
-      return this.props.triggerNextStep({ trigger: '賬單及報錶'})
-    } else {
-      return this.props.triggerNextStep({ trigger: 'initialOptions'})
-    }
+    const word = input.value
     
+    if (word.includes('賬單')) {
+      return this.props.triggerNextStep({ trigger: '賬單'})
+    } 
+    else if (word.includes('發單')||word.includes('幾時')){
+      return this.props.triggerNextStep({ trigger: '賬單發單頻率'})
+    } 
+    else if (word.includes('煤氣費')||word.includes('月費')){
+      return this.props.triggerNextStep({ trigger: '賬單計算方法'})
+    } 
+    else if (word.includes('安裝')||word.includes('工程')){
+      return this.props.triggerNextStep({ trigger: '安裝工程'})
+    } 
+    else if (word.includes('估價')){
+      return this.props.triggerNextStep({ trigger: '估價服務'})
+    } 
+    else if (word.includes('專業')||word.includes('資格')){
+      return this.props.triggerNextStep({ trigger: '安裝工程專業資格'})
+    } 
+    else if (word.includes('保養')||word.includes('爐具')){
+      return this.props.triggerNextStep({ trigger: '產品保養'})
+    } 
+    else if (word.includes('煤氣爐')){
+      return this.props.triggerNextStep({ trigger: '煤氣爐具'})
+    } 
+    else if (word.includes('石油氣')){
+      return this.props.triggerNextStep({ trigger: '石油氣爐具'})
+    }
+    else {
+      return this.props.triggerNextStep({ trigger: 'sorry' })
+    }    
   }
-
-  
-  
-  // triggerNext() {
-  //   this.setState({ trigger: true })
-  //   this.props.triggerNextStep({ trigger: '賬單及報錶'})
-  // }
-
-  // triggerNext() {
-  //   this.setState({ trigger: true }, () => {
-  //     this.props.triggerNextStep({ trigger: '賬單及報錶' })
-  //     // const input = this.state
-  //     // console.log(input)
-  //     // if (input) {
-  //     //   return this.props.triggerNextStep({ trigger: '賬單及報錶' })
-  //     // } else {
-  //     //   return this.props.triggerNextStep({ trigger: '賬單及報錶' })
-  //     // }      
-  //   })
-  // } 
 
   render() { 
     return null
